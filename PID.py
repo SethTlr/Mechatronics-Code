@@ -8,36 +8,19 @@ class PID:
     Integral=0.0
     D_cycle=10
 
-    def __init__(self, P, I, D, cycle ):
-        self.P = P
-        self.I = I
-        self.D = D
-        self.error = 0
-
-    # def update(self, Error, time):
-    #     last_error = self.error
-    #     self.error = Error
-    #
-    #     # P - Preportinal
-    #     Pout = (self.P / 10 * error)
-    #
-    #     # I -
-    #     Iout = (self.I
-    #
-    #
-    #     # D -
-    #     Dout = (Error - last_error)*self.D
+    def __init__(self, kp, ki, kd):
+        self.kp = kp
+        self.ki = ki
+        self.kd = kd
 
 
-
-
-    def correct(self, kp, ki, kd, error):
+    def correct(self, error):
         if (self.previous_time == 0):
             self.previous_time = time.time()
         current_time = time.time()
 
         #P- Preportinal
-        Pout = (kp / 10 * error)
+        Pout = (self.kp / 10 * error)
 
         #I- Intagral
         delta_time = current_time - self.previous_time
@@ -46,13 +29,13 @@ class PID:
             self.Integral = 10
         if self.Integral < -10:
             self.Integral = -10
-        Iout=(ki/10) * self.Integral)
+        Iout=(self.ki/10) * self.Integral
 
         #D- Derivitive
         delta_error = error - self.previous_error
         Derivative = (delta_error / delta_time)
 
-        Dout = ((kd / 1000) * Derivative)
+        Dout = ((self.kd / 1000) * Derivative)
 
         output += Pout + Dout + Iout
 
