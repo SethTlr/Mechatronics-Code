@@ -1,9 +1,9 @@
 import RPi.GPIO as GPIO
+
 GPIO.setmode(GPIO.BOARD)
 
+
 class MotorContol:
-    l_pwm, r_pwm
-    scale
     max, min = 100, 0
 
     def __init__(self, max_speed, max_offset, l_pin, r_pin):
@@ -16,10 +16,10 @@ class MotorContol:
         self.l_pwm.start(0)
         self.r_pwm.start(0)
 
-        #setting range
+        # setting range
         self.scale = 1 / (max_speed + max_offset)
 
-    def bound (self, value):
+    def bound(self, value):
         if value > self.max:
             return self.max
         elif value < self.min:
@@ -27,11 +27,10 @@ class MotorContol:
         else:
             return value
 
-
-    def run(self, speed, offset): #speed: 0-100 turn: -100-100
+    def run(self, speed, offset):  # speed: 0-100 turn: -100-100
         l_duty = (speed + offset) * scale
         r_duty = (speed - offset) * scale
         l_duty = bound(l_duty)
         r_duty = bound(r_duty)
-        l_pwm.ChangeDutyCycle(l_duty)
-        r_pwm.ChangeDutyCycle(r_duty)
+        self.l_pwm.ChangeDutyCycle(l_duty)
+        self.r_pwm.ChangeDutyCycle(r_duty)

@@ -4,14 +4,16 @@ import time
 class PID:
     previous_time =0.0
     previous_error=0.0
-    sum_error=0.0
+    #sum_error=0.0
     Integral=0.0
-    D_cycle=10
+    max_integral=10
+    #D_cycle=10
 
-    def __init__(self, kp, ki, kd):
+    def __init__(self, kp, ki, kd, max_offset):
         self.kp = kp
         self.ki = ki
         self.kd = kd
+        self.max_offset = max_offset
 
 
     def correct(self, error):
@@ -25,10 +27,10 @@ class PID:
         #I- Intagral
         delta_time = current_time - self.previous_time
         self.Integral += (error * delta_time)
-        if self.Integral > 10:
-            self.Integral = 10
-        if self.Integral < -10:
-            self.Integral = -10
+        if self.Integral > self.max_integral:
+            self.Integral = self.max_integral
+        if self.Integral < -(self.max_integral):
+            self.Integral = -(self.max_integral)
         Iout=(self.ki/10) * self.Integral
 
         #D- Derivitive
@@ -41,12 +43,16 @@ class PID:
 
         self.previous_time = current_time
         self.previous_error = error
-        self.sum_error += error
+        #self.sum_error += error
 
-        if ((output > self.D_cycle) & (self.D_cycle < 90)):
-            self.D_cycle += 1
+        #if ((output > self.D_cycle) & (self.D_cycle < 90)):
+        #    self.D_cycle += 1
 
-        if ((output < self.D_cycle) & (self.D_cycle > 10)):
-            self.D_cycle -= 1
+        #if ((output < self.D_cycle) & (self.D_cycle > 10)):
+        #    self.D_cycle -= 1
+
+        if output > max_output:
+            output = max_output
+            print("output exceeded max value")
 
         return output
