@@ -34,7 +34,7 @@ def pixcheck(r, g, b, rp, gp, bp, x, y, height, width, oogi):
     five = (pow((b + 1) / (g + 1), 2) / pow((bp + 1) / (gp + 1), 2) < oogi)
     six = (pow((b + 1) / (g + 1), 2) / pow((bp + 1) / (gp + 1), 2) > boogi)
 
-    # long if statement that checks pixels ratios to each other
+    # statement that checks pixels ratios to each other
     if (one and two) and (three and four) and (five and six):
         return true
     return false
