@@ -63,130 +63,134 @@ def recfun(r, g, b, rp, gp, bp, x, y, height, width, val, picArray, counter, are
     recfun(r, g, b, rp, gp, bp, x + 1, y, height, width, val, picArray, counter, area, color)
     recfun(r, g, b, rp, gp, bp, x - 1, y, height, width, val, picArray, counter, area, color)
 
-def getItems():
 
-    # NOTE, pixel order is BGR
-    buoyred = [30, 50, 200]
-    buoygre = [30, 200, 50]
+class Cam:
+    def __init__(self):
+        self.cam = cv2.VideoCapture(0)
 
-    cap = cv2.VideoCapture(0)
+    def getItems(self):
 
-    # Check if the webcam is opened correctly
-    if not cap.isOpened():
-        raise IOError("Cannot open webcam")
+        # NOTE, pixel order is BGR
+        buoyred = [30, 50, 200]
+        buoygre = [30, 200, 50]
 
-    # read in individual frame
-    ret, frame = cap.read()
+        # Check if the webcam is opened correctly
+        if not self.cam.isOpened():
+            raise IOError("Cannot open webcam")
 
-    # find frame height and width
-    height = frame.shape[0]
-    width = frame.shape[1]
+        # read in individual frame
+        ret, frame = self.cam.read()
 
-    # set 3D usage array, depth of two for checking two colors
-    picArray = np.zeros((width, height))
+        # find frame height and width
+        height = frame.shape[0]
+        width = frame.shape[1]
 
-    # set 3D counter array
-    #   first dimension is to keep track of pixels per relevant area
-    #   second dimension:
-    #       0: pixel numbers
-    #       1: highest pixel
-    #       2: lowest pixel
-    #       3: rightmost pixel
-    #       4: leftmost pixel
-    counter = np.zeros((2, 5, width*height))
+        # set 3D usage array, depth of two for checking two colors
+        picArray = np.zeros((width, height))
 
-    # brightness adjustment value
-    brightnessVal = 0
+        # set 3D counter array
+        #   first dimension is to keep track of pixels per relevant area
+        #   second dimension:
+        #       0: pixel numbers
+        #       1: highest pixel
+        #       2: lowest pixel
+        #       3: rightmost pixel
+        #       4: leftmost pixel
+        counter = np.zeros((2, 5, width*height))
 
-    # arrays for green and red pixels
-    rp = [0, 0]
-    gp = [0, 0]
-    bp = [0, 0]
+        # brightness adjustment value
+        brightnessVal = 0
 
-    rp[0] = buoyred[2] + brightnessVal
-    gp[0] = buoyred[1] + brightnessVal
-    bp[0] = buoyred[0] + brightnessVal
+        # arrays for green and red pixels
+        rp = [0, 0]
+        gp = [0, 0]
+        bp = [0, 0]
 
-    rp[1] = buoygre[2] + brightnessVal
-    gp[1] = buoygre[1] + brightnessVal
-    bp[1] = buoygre[0] + brightnessVal
+        rp[0] = buoyred[2] + brightnessVal
+        gp[0] = buoyred[1] + brightnessVal
+        bp[0] = buoyred[0] + brightnessVal
 
-    # start the pixel area counting at the zero position
-    area = 0
+        rp[1] = buoygre[2] + brightnessVal
+        gp[1] = buoygre[1] + brightnessVal
+        bp[1] = buoygre[0] + brightnessVal
 
-    # run for loop that continues through entire frame
-    for y in range(height - 1):
-        for x in range(width - 1):
+        # start the pixel area counting at the zero position
+        area = 0
 
-            # start checking if usage array denotes unchecked pixel
-            if picArray[x][y] == 0:
+        # run for loop that continues through entire frame
+        for y in range(height - 1):
+            for x in range(width - 1):
 
-                # update usage array
-                picArray[x][y] = 1
+                # start checking if usage array denotes unchecked pixel
+                if picArray[x][y] == 0:
 
-                # read in current pixel's RGB values
-                r = frame[y][x][2]
-                g = frame[y][x][1]
-                b = frame[y][x][0]
-
-                # check if this pixel is close to target shade of red
-                tval = pixcheck(r, g, b, rp[0], gp[0], bp[0], x, y, height, width, 1.5)
-
-                if tval:
-
-                    # set initial far point values
-                    counter[0][1][area] = y
-                    counter[0][2][area] = y
-                    counter[0][3][area] = x
-                    counter[0][4][area] = x
-
-                    # recursively find entire area of red
-                    recfun(r, g, b, rp, gp, bp, x, y, height, width, 1.5, picArray, counter, area, 0)
-
-                    # increment area position after checking entire area recursively
-                    area = area + 1
-
-                # do the above checks but for the relevant green shade
-                tval = pixcheck(r, g, b, rp[1], gp[1], bp[1], x, y, height, width, 1.5)
-
-                if tval:
+                    # update usage array
                     picArray[x][y] = 1
-                    area = area + 1
-                    counter[1][1][area] = y
-                    counter[1][2][area] = y
-                    counter[1][3][area] = x
-                    counter[1][4][area] = x
 
-                    recfun(r, g, b, rp, gp, bp, x, y, height, width, 1.5, picArray, counter, area, 1)
+                    # read in current pixel's RGB values
+                    r = frame[y][x][2]
+                    g = frame[y][x][1]
+                    b = frame[y][x][0]
 
-    list_red = np.zeros((width * height))
-    list_gre = np.zeros((width * height))
+                    # check if this pixel is close to target shade of red
+                    tval = pixcheck(r, g, b, rp[0], gp[0], bp[0], x, y, height, width, 1.5)
 
-    for z in range( width * height ):
-        list_red[z] = counter[0][0][z]
-        list_gre[z] = counter[1][0][z]
+                    if tval:
 
-    max_red = np.where(list_red == np.amax(list_red))
-    max_gre = np.where(list_gre == np.amax(list_gre))
+                        # set initial far point values
+                        counter[0][1][area] = y
+                        counter[0][2][area] = y
+                        counter[0][3][area] = x
+                        counter[0][4][area] = x
 
-    red_center_x = (counter[0][3][max_red] - counter[0][4][max_red]) / 2
-    red_center_x = red_center_x + counter[0][4][max_red]
+                        # recursively find entire area of red
+                        recfun(r, g, b, rp, gp, bp, x, y, height, width, 1.5, picArray, counter, area, 0)
 
-    gre_center_x = (counter[1][3][max_gre] - counter[1][4][max_gre]) / 2
-    gre_center_x = gre_center_x + counter[1][4][max_gre]
+                        # increment area position after checking entire area recursively
+                        area = area + 1
 
-    red_center_y = (counter[0][1][max_red] - counter[0][2][max_red]) / 2
-    red_center_y = red_center_y + counter[0][2][max_red]
+                    # do the above checks but for the relevant green shade
+                    tval = pixcheck(r, g, b, rp[1], gp[1], bp[1], x, y, height, width, 1.5)
 
-    gre_center_y = (counter[1][1][max_gre] - counter[1][2][max_gre]) / 2
-    gre_center_y = gre_center_y + counter[1][2][max_gre]
+                    if tval:
+                        picArray[x][y] = 1
+                        area = area + 1
+                        counter[1][1][area] = y
+                        counter[1][2][area] = y
+                        counter[1][3][area] = x
+                        counter[1][4][area] = x
 
-    # send in gre_center_x/gre_center_y and red_center_x/red_center_y
-    green = ([gre_center_x, gre_center_y], 'G')
-    red = ([red_center_x, red_center_y]), 'R')
+                        recfun(r, g, b, rp, gp, bp, x, y, height, width, 1.5, picArray, counter, area, 1)
 
-    items = [green, red]
+        list_red = np.zeros((width * height))
+        list_gre = np.zeros((width * height))
 
-    return items
+        for z in range( width * height ):
+            list_red[z] = counter[0][0][z]
+            list_gre[z] = counter[1][0][z]
 
-    cap.release()
+        max_red = np.where(list_red == np.amax(list_red))
+        max_gre = np.where(list_gre == np.amax(list_gre))
+
+        red_center_x = (counter[0][3][max_red] - counter[0][4][max_red]) / 2
+        red_center_x = red_center_x + counter[0][4][max_red]
+
+        gre_center_x = (counter[1][3][max_gre] - counter[1][4][max_gre]) / 2
+        gre_center_x = gre_center_x + counter[1][4][max_gre]
+
+        red_center_y = (counter[0][1][max_red] - counter[0][2][max_red]) / 2
+        red_center_y = red_center_y + counter[0][2][max_red]
+
+        gre_center_y = (counter[1][1][max_gre] - counter[1][2][max_gre]) / 2
+        gre_center_y = gre_center_y + counter[1][2][max_gre]
+
+        # send in gre_center_x/gre_center_y and red_center_x/red_center_y
+        green = {"pos": (gre_center_x, gre_center_y), "area": temp, "color": 'green'}
+        red = {"pos": (red_center_x, red_center_y), "area": temp, "color": 'red'}
+
+        items = [green, red]
+
+        return items
+
+    def close(self):
+        self.cam.release()
