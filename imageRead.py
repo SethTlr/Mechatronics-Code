@@ -2,13 +2,6 @@ import cv2
 import os
 import numpy as np
 
-cap = cv2.VideoCapture(0)
-
-# Check if the webcam is opened correctly
-if not cap.isOpened():
-    raise IOError("Cannot open webcam")
-
-
 def pixcheck(r, g, b, rp, gp, bp, x, y, height, width, oogi):
 
     # set inverse of tolerance value for checking
@@ -16,16 +9,16 @@ def pixcheck(r, g, b, rp, gp, bp, x, y, height, width, oogi):
 
     # check that pixels are within bounds of frame
     if x < 0:
-        return false
+        return False
 
     if width - x < 0:
-        return false
+        return False
 
     if y < 0:
-        return false
+        return False
 
     if height - y:
-        return false
+        return False
 
     one = (pow((r + 1) / (g + 1), 2) / pow((rp + 1) / (gp + 1), 2) < oogi)
     two = (pow((r + 1) / (g + 1), 2) / pow((rp + 1) / (gp + 1), 2) > boogi)
@@ -34,10 +27,10 @@ def pixcheck(r, g, b, rp, gp, bp, x, y, height, width, oogi):
     five = (pow((b + 1) / (g + 1), 2) / pow((bp + 1) / (gp + 1), 2) < oogi)
     six = (pow((b + 1) / (g + 1), 2) / pow((bp + 1) / (gp + 1), 2) > boogi)
 
-    # statement that checks pixels ratios to each other
+    # long if statement that checks pixels ratios to each other
     if (one and two) and (three and four) and (five and six):
-        return true
-    return false
+        return True
+    return False
 
 
 def recfun(r, g, b, rp, gp, bp, x, y, height, width, val, picArray, counter, area, color):
@@ -70,29 +63,27 @@ def recfun(r, g, b, rp, gp, bp, x, y, height, width, val, picArray, counter, are
     recfun(r, g, b, rp, gp, bp, x + 1, y, height, width, val, picArray, counter, area, color)
     recfun(r, g, b, rp, gp, bp, x - 1, y, height, width, val, picArray, counter, area, color)
 
+def getItems():
 
+    # NOTE, pixel order is BGR
+    buoyred = [30, 50, 200]
+    buoygre = [30, 200, 50]
 
+    cap = cv2.VideoCapture(0)
 
-
-# NOTE, pixel order is BGR
-buoyred = [30, 50, 200]
-buoygre = [30, 200, 50]
-
-
-while True:
+    # Check if the webcam is opened correctly
+    if not cap.isOpened():
+        raise IOError("Cannot open webcam")
 
     # read in individual frame
     ret, frame = cap.read()
-
-    # display individual frame (placeholder)
-    cv2.imshow('Frame', frame)
 
     # find frame height and width
     height = frame.shape[0]
     width = frame.shape[1]
 
     # set 3D usage array, depth of two for checking two colors
-    picArray = [[[0] * width] * height] * 2
+    picArray = np.zeros((width, height))
 
     # set 3D counter array
     #   first dimension is to keep track of pixels per relevant area
@@ -102,13 +93,15 @@ while True:
     #       2: lowest pixel
     #       3: rightmost pixel
     #       4: leftmost pixel
-    counter = [[[0] * width * height] * 5] * 2
+    counter = np.zeros((2, 5, width*height))
 
     # brightness adjustment value
     brightnessVal = 0
 
     # arrays for green and red pixels
-    rp, gp, bp = [2]
+    rp = [0, 0]
+    gp = [0, 0]
+    bp = [0, 0]
 
     rp[0] = buoyred[2] + brightnessVal
     gp[0] = buoyred[1] + brightnessVal
@@ -122,8 +115,8 @@ while True:
     area = 0
 
     # run for loop that continues through entire frame
-    for y in range(height):
-        for x in range(width):
+    for y in range(height - 1):
+        for x in range(width - 1):
 
             # start checking if usage array denotes unchecked pixel
             if picArray[x][y] == 0:
@@ -132,9 +125,9 @@ while True:
                 picArray[x][y] = 1
 
                 # read in current pixel's RGB values
-                r = frame[x][y][2]
-                g = frame[x][y][1]
-                b = frame[x][y][0]
+                r = frame[y][x][2]
+                g = frame[y][x][1]
+                b = frame[y][x][0]
 
                 # check if this pixel is close to target shade of red
                 tval = pixcheck(r, g, b, rp[0], gp[0], bp[0], x, y, height, width, 1.5)
@@ -142,10 +135,10 @@ while True:
                 if tval:
 
                     # set initial far point values
-                    counter[area][1][0] = y
-                    counter[area][2][0] = y
-                    counter[area][3][0] = x
-                    counter[area][4][0] = x
+                    counter[0][1][area] = y
+                    counter[0][2][area] = y
+                    counter[0][3][area] = x
+                    counter[0][4][area] = x
 
                     # recursively find entire area of red
                     recfun(r, g, b, rp, gp, bp, x, y, height, width, 1.5, picArray, counter, area, 0)
@@ -159,40 +152,41 @@ while True:
                 if tval:
                     picArray[x][y] = 1
                     area = area + 1
-                    counter[area][1][1] = y
-                    counter[area][2][1] = y
-                    counter[area][3][1] = x
-                    counter[area][4][1] = x
+                    counter[1][1][area] = y
+                    counter[1][2][area] = y
+                    counter[1][3][area] = x
+                    counter[1][4][area] = x
 
                     recfun(r, g, b, rp, gp, bp, x, y, height, width, 1.5, picArray, counter, area, 1)
 
-    list_red = [0] * width * height
-    list_gre = [0] * width * height
+    list_red = np.zeros((width * height))
+    list_gre = np.zeros((width * height))
 
-    for z in range(width*height):
-        list_red[z] = counter[z][0][0]
-        list_red[z] = counter[z][0][1]
+    for z in range( width * height ):
+        list_red[z] = counter[0][0][z]
+        list_gre[z] = counter[1][0][z]
 
     max_red = np.where(list_red == np.amax(list_red))
     max_gre = np.where(list_gre == np.amax(list_gre))
 
-    red_center_x = (counter[max_red][3][0] - counter[max_red][4][0]) / 2
-    red_center_x = red_center_x + counter[max_red][4][0]
+    red_center_x = (counter[0][3][max_red] - counter[0][4][max_red]) / 2
+    red_center_x = red_center_x + counter[0][4][max_red]
 
-    gre_center_x = (counter[max_gre][3][1] - counter[max_gre][4][1]) / 2
-    gre_center_x = gre_center_x + counter[max_gre][4][1]
+    gre_center_x = (counter[1][3][max_gre] - counter[1][4][max_gre]) / 2
+    gre_center_x = gre_center_x + counter[1][4][max_gre]
 
-    red_center_y = (counter[max_red][1][0] - counter[max_red][2][0]) / 2
-    red_center_y = red_center_y + counter[max_red][2][0]
+    red_center_y = (counter[0][1][max_red] - counter[0][2][max_red]) / 2
+    red_center_y = red_center_y + counter[0][2][max_red]
 
-    gre_center_y = (counter[max_gre][1][1] - counter[max_gre][2][1]) / 2
-    gre_center_y = gre_center_y + counter[max_gre][2][1]
+    gre_center_y = (counter[1][1][max_gre] - counter[1][2][max_gre]) / 2
+    gre_center_y = gre_center_y + counter[1][2][max_gre]
 
     # send in gre_center_x/gre_center_y and red_center_x/red_center_y
+    green = ([gre_center_x, gre_center_y], 'G')
+    red = ([red_center_x, red_center_y]), 'R')
 
-    # stopping command
-    if cv2.waitKey(20) & 0xFF == ord('d'):
-        break
+    items = [green, red]
 
-cap.release()
-cv2.destroyAllWindows()
+    return items
+
+    cap.release()
