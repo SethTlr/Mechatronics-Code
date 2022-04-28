@@ -28,9 +28,9 @@ class MotorContol:
             return value
 
     def run(self, speed, offset):  # speed: 0-100 turn: -100-100
-        l_duty = (speed + offset) * scale
-        r_duty = (speed - offset) * scale
-        l_duty = bound(l_duty)
-        r_duty = bound(r_duty)
+        l_duty = (speed + offset) * self.scale
+        r_duty = (speed - offset) * self.scale
+        l_duty = self.bound(l_duty)
+        r_duty = self.bound(r_duty)
         self.l_pwm.ChangeDutyCycle(l_duty)
         self.r_pwm.ChangeDutyCycle(r_duty)

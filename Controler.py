@@ -65,18 +65,17 @@ class handle_joystick:
 		return [Axis_values, Button_values, Hats_values]
 
 
-pygame.init()
-joy = handle_joystick()
-joy_values = []
+if __name__ == "__main__":
+	pygame.init()
+	joy = handle_joystick()
+	joy_values = []
+	
+	while True:
+		for event in pygame.event.get():
+			# loop through events, if window shut down, quit program
+			if event.type == pygame.QUIT:
+				pygame.quit()
+				sys.exit()
 
-      
-while True:
-	for event in pygame.event.get():
-		# loop through events, if window shut down, quit program
-		if event.type == pygame.QUIT:
-			pygame.quit()
-			sys.exit()
-		
-		joy_values = joy.update()
-		print(joy_values)
-      
+			joy_values = joy.update()
+			print(joy_values)
