@@ -1,7 +1,7 @@
 import time
 from MotorControl import MotorContol
 from PID import PID
-from imageRead import cam
+from imageRead import Cam
 from Tele import tele
 
 # from imageRead import get_Items
@@ -37,7 +37,7 @@ def auto():
 
     last = False
 
-    cam_image = cam()
+    cam_image = Cam()
 
     while True:
         #  vars --------------------------------------------------------------------------------------------------------
@@ -55,10 +55,9 @@ def auto():
         # --------------------------------------------------------------------------------------------------------------
 
         # find objects CV
-        objects =
         # center_x, center_y is from center of screen
         # returns [[pos" = (center_x, center_y), area, color], [(center_x, center_y), area, color]]
-        objects = get_Image_Objects()
+        objects = cam_image.getItems()
 
         # check if done
         if last and len(objects) == 0:
