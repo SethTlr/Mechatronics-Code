@@ -16,6 +16,7 @@ class Cam:
 
     def Pic(self):
         ret, frame = self.cam.read(self.cam_num)
+        # frame = cv2.imread('2 (6).jpg')
         return frame
 
     def pipeline(self, img):
@@ -152,9 +153,36 @@ class Cam:
 
             # get BGR
             (b, g, r) = (img[x, y])
-            if r > b and r > g:
+
+            oogi = 1.7
+            boogi = 1 / oogi
+
+            rr = 150
+            gr = 100
+            br = 90
+
+            rg = 85
+            gg = 130
+            bg = 110
+
+            rone = (pow((r + 1) / (g + 1), 2) / pow((rr + 1) / (gr + 1), 2) < oogi)
+            rtwo = (pow((r + 1) / (g + 1), 2) / pow((rr + 1) / (gr + 1), 2) > boogi)
+            rthree = (pow((r + 1) / (b + 1), 2) / pow((rr + 1) / (br + 1), 2) < oogi)
+            rfour = (pow((r + 1) / (b + 1), 2) / pow((rr + 1) / (br + 1), 2) > boogi)
+            rfive = (pow((b + 1) / (g + 1), 2) / pow((br + 1) / (gr + 1), 2) < oogi)
+            rsix = (pow((b + 1) / (g + 1), 2) / pow((br + 1) / (gr + 1), 2) > boogi)
+
+            gone = (pow((r + 1) / (g + 1), 2) / pow((rg + 1) / (gg + 1), 2) < oogi)
+            gtwo = (pow((r + 1) / (g + 1), 2) / pow((rg + 1) / (gg + 1), 2) > boogi)
+            gthree = (pow((r + 1) / (b + 1), 2) / pow((rg + 1) / (bg + 1), 2) < oogi)
+            gfour = (pow((r + 1) / (b + 1), 2) / pow((rg + 1) / (bg + 1), 2) > boogi)
+            gfive = (pow((b + 1) / (g + 1), 2) / pow((bg + 1) / (gg + 1), 2) < oogi)
+            gsix = (pow((b + 1) / (g + 1), 2) / pow((bg + 1) / (gg + 1), 2) > boogi)
+
+
+            if rone and rtwo and rthree and rfour and rfive and rsix:
                 color = "red"
-            elif g > b and g > r:
+            elif gone and gtwo and gthree and gfour and gfive and gsix:
                 color = "green"
             else:
                 color = "unknowen"
@@ -166,9 +194,9 @@ class Cam:
 
 def main():
 
-    red = (192, 255)
-    green = (50, 140)
-    blue = (0, 105)
+    red = (70, 255)
+    green = (50, 220)
+    blue = (65, 180)
 
     thresh_BGR = {"red": red, "green": green, "blue": blue}
     Thresh_Contour = (cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_NONE)
