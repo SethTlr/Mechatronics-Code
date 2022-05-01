@@ -62,7 +62,7 @@ class handle_joystick:
 			for i in range(self.hats):
 				Hats_values.append(self.getHat(i))
 		
-		return [Axis_values, Button_values, Hats_values]
+		return Axis_values, Button_values, Hats_values
 
 
 if __name__ == "__main__":
