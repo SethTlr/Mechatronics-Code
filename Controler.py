@@ -46,7 +46,8 @@ class handle_joystick:
 			# returns tuple with values either 1, 0 or -1
 			print(f"Hat value is {value[0]}, {value[1]} | Hat ID is {number}")
 		return value
-	
+
+
 	def update(self):
 		Axis_values = []
 		Button_values = []
